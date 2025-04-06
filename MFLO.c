@@ -1,82 +1,83 @@
 #include "Instruction.h"
+// Author: Kayden Yost
 
+/**
+ * Function: mflo_reg_assm
+ * -----------------------
+ * Encodes the "MFLO" (Move From LO Register) instruction into binary format based on the provided parameters.
+ * 
+ * Preconditions:
+ * - OP_CODE must be "MFLO".
+ * - PARAM1 must be a REGISTER (destination register).
+ * - PARAM1.value must be within the valid range of 0-31.
+ * 
+ * Postconditions:
+ * - Sets the binary representation of the instruction using `setBits_str` and `setBits_num`.
+ * - Updates the `state` to COMPLETE_ENCODE if successful, or an error state otherwise.
+ */
 void mflo_reg_assm(void) {
 
-	if (strcmp(OP_CODE, "MFLO") != 0) {
+    // Check if the operation code matches "MFLO".
+    if (strcmp(OP_CODE, "MFLO") != 0) {
+        state = WRONG_COMMAND; // Set state to WRONG_COMMAND if the opcode is incorrect.
+        return;
+    }
+    
+    // Validate that the first parameter is a REGISTER.
+    if (PARAM1.type != REGISTER) {
+        state = MISSING_REG; // Set state to MISSING_REG if PARAM1 is not a REGISTER.
+        return;
+    }
+    
+    // Validate that the register value is within the valid range (0-31).
+    if (PARAM1.value > 31) {
+        state = INVALID_REG; // Set state to INVALID_REG if the register value is invalid.
+        return;
+    }
+    
+    // Set the opcode bits for "MFLO".
+    setBits_str(31, "000000");
 
-		state = WRONG_COMMAND;
-		return;
-	}
+    // Set the function code bits for "MFLO".
+    setBits_str(5, "010010");
 
-	/*
-		Checking the type of parameters
-	*/
+    // Set the destination register (Rd) bits.
+    setBits_num(15, PARAM1.value, 5);
 
-	// The only parameter should be a register
-	if (PARAM1.type != REGISTER) {
-		state = MISSING_REG;
-		return;
-	}
-
-
-	/*
-		Checking the value of parameters
-	*/
-	// Rd should be 31 or less
-	if (PARAM1.value > 31) {
-		state = INVALID_REG;
-		return;
-	}
-
-	/*
-	Putting the binary together
-	*/
-	// Set the opcode
-	setBits_str(31, "000000");
-	// set rd
-	setBits_num(15, PARAM1.value, 5);
-
-	// Set the funct 
-	setBits_str(5, "010000");
-	// set 25-16 as 0s 
-	setBits_str(10, "000000");
-
-	// set 10-6 as 0s 
-	setBits_str(10, "00000");
-
-	// tell the system the encoding is done
-	state = COMPLETE_ENCODE;
+    // Update the state to indicate successful encoding.
+    state = COMPLETE_ENCODE;
 }
 
+/**
+ * Function: mflo_reg_bin
+ * ----------------------
+ * Decodes a binary representation of the "MFLO" (Move From LO Register) instruction into its components.
+ * 
+ * Preconditions:
+ * - The binary instruction must have the opcode "000000" at bits 31-26 and the function code "010010" at bits 5-0.
+ * 
+ * Postconditions:
+ * - Extracts the destination register (Rd).
+ * - Sets the operation and parameters using `setOp` and `setParam`.
+ * - Updates the `state` to COMPLETE_DECODE if successful, or an error state otherwise.
+ */
 void mflo_reg_bin(void) {
-	// Check if the op code bits match
-	// check_bits(start_bit, bit_string) returns 0 if the bit_string matches
-	//  any x will be skipped
-	// If the manual shows (0), then the value of that bit doesnt matter
-	if (checkBits(31, "000000") != 0 || checkBits(5, "010000") != 0 || checkBits(25, "0000000000") != 0 || checkBits(10, "00000") != 0) {
-		state = WRONG_COMMAND;
-		return;
-	}
 
-	// If the op code bits match, then the rest can be read as correctly
+    // Check if the opcode and function code in the binary instruction match "MFLO".
+    if (checkBits(31, "000000") != 0 || checkBits(5, "010010") != 0) {
+        state = WRONG_COMMAND; // Set state to WRONG_COMMAND if the opcode or function code is incorrect.
+        return;
+    }
+    
+    // Extract the destination register (Rd) from bits 15-11.
+    uint32_t Rd = getBits(15, 5);
 
-	/*
-		Finding values in the binary
-	*/
+    // Set the operation name to "MFLO".
+    setOp("MFLO");
 
-	// getBits(start_bit, width)
-	uint32_t Rd = getBits(15, 5);
-	/*
-		Setting Instuciton values
-	*/
-	setOp("MFLO");
-	//setParam(param_num, param_type, param_value)
-	setParam(1, REGISTER, Rd); //destination
-	
+    // Set the destination register parameter.
+    setParam(1, REGISTER, Rd);
 
-	// tell the system the decoding is done
-	state = COMPLETE_DECODE;
-	
+    // Update the state to indicate successful decoding.
+    state = COMPLETE_DECODE;
 }
-
-
