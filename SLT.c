@@ -9,9 +9,7 @@
 
 void slt_reg_assm(void) {
 	// Checking that the op code matches
-	// strcmp(string1, string2) return 0 if they match
 	if (strcmp(OP_CODE, "SLT") != 0) {
-		// If the op code doesnt match, this isnt the correct command
 		state = WRONG_COMMAND;
 		return;
 	}
@@ -20,21 +18,8 @@ void slt_reg_assm(void) {
 		Checking the type of parameters 
 	*/
 
-	// Generally the first parameter should always be a register
-	if (PARAM1.type != REGISTER) {
-		state = MISSING_REG;
-		return;
-	}
-
-	// This is AND register, so param 2 needs to be a register
-	if (PARAM2.type != REGISTER) {
-		state = MISSING_REG;
-		return;
-	}
-
-	// This is AND register, so param 3 needs to be a register
-	if (PARAM3.type != REGISTER) {
-		state = MISSING_REG;
+	if (PARAM1.type != REGISTER || PARAM2.type != REGISTER || PARAM3.type != REGISTER) {
+		state = INVALID_PARAM;
 		return;
 	}
 
@@ -42,20 +27,8 @@ void slt_reg_assm(void) {
 		Checking the value of parameters
 	*/
 
-	// Rd should be 31 or less
-	if (PARAM1.value > 31) {
-		state = INVALID_REG;
-		return;
-	}
-
-	// Rs should be 31 or less
-	if (PARAM2.value > 31) {
-		state = INVALID_REG;
-		return;
-	}
-
-	// Rt should be 31 or less
-	if (PARAM3.value > 31) {
+	// All registers should be between 0 and 31
+	if (PARAM1.value > 31 || PARAM2.value > 31 || PARAM3.value > 31) {
 		state = INVALID_REG;
 		return;
 	}
@@ -64,58 +37,47 @@ void slt_reg_assm(void) {
 		Putting the binary together
 	*/
 
-	// Set the opcode
-	setBits_num(31, 0, 6);
+	// Set the opcode (R-type, so all zeroes)
+	setBits_str(31, "000000");
 
-	// Set the funct 
+	// Set source and destination registers
+	setBits_num(25, PARAM2.value, 5); // Rs
+	setBits_num(20, PARAM1.value, 5); // Rd
+	setBits_num(15, PARAM3.value, 5); // Rt
+
+	// Set shift amount to zero
+	setBits_str(10, "00000");
+
+	// Set the function code for SLT
 	setBits_str(5, "101010");
 
-	// set Rd
-	setBits_num(20, PARAM1.value, 5);
-
-	// set Rs
-	setBits_num(25, PARAM2.value, 5);
-
-	// set Rt
-	setBits_num(15, PARAM3.value, 5);
-
-	// tell the system the encoding is done
+	// Let 'em know we’re done
 	state = COMPLETE_ENCODE;
 }
 
 void slt_reg_bin(void) {
-	// Check if the op code bits match
-	// check_bits(start_bit, bit_string) returns 0 if the bit_string matches
-	//  any x will be skipped
-	// If the manual shows (0), then the value of that bit doesnt matter
+	// Confirm opcode and funct match SLT
 	if (checkBits(31, "000000") != 0 || checkBits(5, "101010") != 0) {
 		state = WRONG_COMMAND;
 		return;
 	}
 
-	// If the op code bits match, then the rest can be read as correctly
-
 	/*
-		Finding values in the binary
+		Get values from instruction binary
 	*/
-	// getBits(start_bit, width)
-	uint32_t Rd = getBits(15, 5);
-	uint32_t Rs = getBits(25, 5);
-	uint32_t Rt = getBits(20, 5);
+
+	uint32_t Rs = getBits(25, 5);  // First operand
+	uint32_t Rt = getBits(20, 5);  // Second operand
+	uint32_t Rd = getBits(15, 5);  // Destination
 
 	/*
-		Setting Instuciton values
+		Fill in the instruction structure
 	*/
 
 	setOp("SLT");
-	//setCond_num(cond);
-	//setParam(param_num, param_type, param_value)
-	setParam(1, REGISTER, Rd); //destination
-	setParam(2, REGISTER, Rs); //first source register operand
-	setParam(3, REGISTER, Rt); //second source register operand
+	setParam(1, REGISTER, Rd); // Destination
+	setParam(2, REGISTER, Rs); // Source 1
+	setParam(3, REGISTER, Rt); // Source 2
 
-	// tell the system the decoding is done
 	state = COMPLETE_DECODE;
 }
-
-
