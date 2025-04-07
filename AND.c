@@ -5,7 +5,7 @@ void and_reg_assm(void) {
 	// strcmp(string1, string2) return 0 if they match
 	if (strcmp(OP_CODE, "AND") != 0) {
 		// If the op code doesnt match, this isnt the correct command
-		state = WRONG_COMMAND	;
+		state = WRONG_COMMAND;
 		return;
 	}
 
@@ -67,10 +67,10 @@ void and_reg_assm(void) {
 	setBits_str(5, "100100");
 
 	// set Rd
-	setBits_num(25, PARAM1.value, 5);
+	setBits_num(15, PARAM1.value, 5);
 
 	// set Rs
-	setBits_num(15, PARAM2.value, 5);
+	setBits_num(25, PARAM2.value, 5);
 
 	// set Rt
 	setBits_num(20, PARAM3.value, 5);

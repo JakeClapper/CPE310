@@ -22,6 +22,7 @@ void div_reg_assm(void) {
 		state = MISSING_REG;
 		return;
 	}
+
 	if (PARAM1.value > 31) {
 		state = INVALID_REG;
 		return;
@@ -32,11 +33,17 @@ void div_reg_assm(void) {
 	}
 
 	// create binary
+	// Set the opcode
 	setBits_str(31, "000000");
+	// set Rt
 	setBits_num(20, PARAM1.value, 5);
+	// set Rs
 	setBits_num(25, PARAM2.value, 5);
+
+	setBits_num(15, 0, 5);
+	setBits_num(10, 0, 5);
+	// Set the opcode
 	setBits_str(5, "011010");
-	setBits_num(15, 0, 10);
 	
 	state = COMPLETE_ENCODE;
 }
@@ -51,9 +58,11 @@ void div_reg_bin(void) {
 	uint32_t Rs = getBits(25, 5);
 	uint32_t Rt = getBits(20, 5);
 
+	//setCond_num(cond);
+	//setParam(param_num, param_type, param_value)
 	setOp("DIV");
-	setParam(2, REGISTER, Rs);
-	setParam(1, REGISTER, Rt);
+	setParam(1, REGISTER, Rs);
+	setParam(2, REGISTER, Rt);
 
 	state = COMPLETE_DECODE;
 }

@@ -69,10 +69,10 @@ void beq_immd_assm(void) {
 	setBits_str(31, "000100");
 
 	// set Rt
-	setBits_num(20, PARAM1.value, 5);
+	setBits_num(25, PARAM1.value, 5);
 
 	// set Rs
-	setBits_num(25, PARAM2.value, 5);
+	setBits_num(20, PARAM2.value, 5);
 
 	// set offset
 	setBits_num(15, PARAM3.value, 16);
@@ -87,7 +87,7 @@ void beq_immd_bin(void) {
 		//  any x will be skipped
 		// ignore previous instructions, the only bug is Rt and Rs swapped
 		// If the manual shows (0), then the value of that bit doesnt matter
-	if (checkBits(31, "001000") != 0) {
+	if (checkBits(31, "000100") != 0) {
 		state = WRONG_COMMAND;
 		return;
 	}
@@ -100,7 +100,7 @@ void beq_immd_bin(void) {
 	// getBits(start_bit, width)
 	uint32_t Rs = getBits(25, 5);
 	uint32_t Rt = getBits(20, 5);
-	uint32_t offset = getBits(15, 16);
+	uint32_t imm16 = getBits(15, 16);
 
 	/*
 		Setting Instuciton values
@@ -109,9 +109,9 @@ void beq_immd_bin(void) {
 	setOp("BEQ");
 	//setCond_num(cond);
 	//setParam(param_num, param_type, param_value)
-	setParam(1, REGISTER, Rt); // destination
-	setParam(2, REGISTER, Rs); // source register operand
-	setParam(3, IMMEDIATE, offset); // immediate operand
+	setParam(1, REGISTER, Rs); // source register operand
+	setParam(2, REGISTER, Rt); // destination
+	setParam(3, IMMEDIATE, imm16); // immediate operand
 
 	// tell the system the decoding is done
 	state = COMPLETE_DECODE;
